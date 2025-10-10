@@ -1,103 +1,141 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Shield, MessageCircle, ShoppingBag } from "lucide-react";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import FeatureCard from "@/components/FeatureCard";
+
+function Step({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow">
+      <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-bold mb-4">
+        {number}
+      </div>
+      <h3 className="text-xl font-semibold text-emerald-700 mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-emerald-100 text-gray-800 flex flex-col">
+      {/* HEADER */}
+      <Header />
+
+      {/* HERO SECTION */}
+      <section className="flex-1 relative py-28 text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-6xl font-extrabold text-emerald-700 mb-6"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Buy & Sell Safely — Powered by ZentrixTrust
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="text-lg text-gray-600 mb-10 leading-relaxed"
           >
-            Read our docs
-          </a>
+            ZentrixTrust helps you buy and sell securely with built-in
+            security, real-time messaging, and verified users. Every transaction
+            protected — every deal transparent.
+          </motion.p>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/marketplace">
+              <Button size="lg" className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer">
+                Explore Marketplace
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button size="lg" variant="outline" className="cursor-pointer">
+                Become a Seller
+              </Button>
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </section>
+
+      {/* FEATURES */}
+      <section className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FeatureCard
+            icon={<Shield className="w-10 h-10 text-emerald-600" />}
+            title="Escrow Protection"
+            description="Payments are held securely until both buyer and seller complete their sides of the transaction."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            icon={<MessageCircle className="w-10 h-10 text-emerald-600" />}
+            title="Real-Time Messaging"
+            description="Communicate directly with the seller in a protected chat linked to each transaction."
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            icon={<ShoppingBag className="w-10 h-10 text-emerald-600" />}
+            title="Seamless Checkout"
+            description="Integrated payment flow that ensures safety, convenience, and instant confirmation."
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="py-24 bg-emerald-50 text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-emerald-700 mb-8">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <Step
+              number="1"
+              title="Find a Listing"
+              description="Browse verified sellers offering items and services across categories."
+            />
+            <Step
+              number="2"
+              title="Make Payment"
+              description="Your payment is held in escrow until delivery is confirmed."
+            />
+            <Step
+              number="3"
+              title="Chat & Complete"
+              description="Communicate, confirm, and release payment securely once satisfied."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 bg-emerald-700 text-white text-center">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-4xl font-bold mb-6">Start Trading with Confidence</h2>
+          <p className="text-lg mb-8 text-emerald-100">
+            Join thousands of verified users buying and selling safely online.
+          </p>
+          <Link href="/marketplace">
+            <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-100">
+              Browse Marketplace
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <Footer />
     </div>
   );
 }
