@@ -18,9 +18,13 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, form);
-      localStorage.setItem("token", res.data.token);
-      alert("Login successful!");
+      const res = await axios.post(`${
+        process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, 
+        form,
+        { withCredentials: true }
+      );
+      // localStorage.setItem("token", res.data.token);
+      // alert("Login successful!");
       window.location.href = "/marketplace";
       
     } 
