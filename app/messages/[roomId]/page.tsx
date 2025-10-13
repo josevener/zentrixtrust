@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Image from "next/image";
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300");
 
@@ -180,7 +181,7 @@ export default function ChatRoomPage() {
                 {msg.images && msg.images.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.images.map((image, i) => (
-                      <img
+                      <Image
                         key={i}
                         src={image}
                         alt={`Sent image ${i + 1}`}
@@ -258,8 +259,10 @@ export default function ChatRoomPage() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative max-w-[150px]">
-                      <img
+                      <Image
                         src={preview}
+                        height={30}
+                        width={30}
                         alt={`Image preview ${index + 1}`}
                         className="w-full rounded-lg shadow-sm"
                       />

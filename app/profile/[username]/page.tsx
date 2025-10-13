@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Heart, MessageCircle, Share2, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import AuthHeader from "@/components/AuthHeader";
