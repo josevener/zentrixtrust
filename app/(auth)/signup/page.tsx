@@ -9,7 +9,16 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function SignUpPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState(
+    { 
+      username: "",
+      firstname: "", 
+      lastname: "", 
+      email: "", 
+      password: "", 
+      confirm_password: "", 
+    }
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -42,10 +51,24 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="First Name"
+                value={form.firstname}
+                onChange={(e) => setForm({ ...form, firstname: e.target.value })}
+                required
+              />
+              <Input
+                placeholder="Last Name"
+                value={form.lastname}
+                onChange={(e) => setForm({ ...form, lastname: e.target.value })}
+                required
+              />
+            </div>
             <Input
-              placeholder="Full Name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Username"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
               required
             />
             <Input
@@ -61,6 +84,14 @@ export default function SignUpPage() {
               minLength={8}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Confirm Password"
+              minLength={8}
+              value={form.confirm_password}
+              onChange={(e) => setForm({ ...form, confirm_password: e.target.value })}
               required
             />
 

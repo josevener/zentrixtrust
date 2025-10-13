@@ -23,7 +23,7 @@ export default function AuthHeader() {
     { href: "/ongoing", label: "Ongoing" },
     { href: "/completed", label: "Completed" },
     { href: "/cancelled", label: "Cancelled" },
-    { href: "/profile", label: "Profile" },
+    { href: `/profile/${user?.username}`, label: "Profile" },
   ];
 
   return (
@@ -82,7 +82,7 @@ export default function AuthHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile">Profile</Link>
+                <Link href={`/profile/${user?.username}`}>Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings">Settings</Link>

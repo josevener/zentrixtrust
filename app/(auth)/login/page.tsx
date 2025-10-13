@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login } = useUser();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +27,12 @@ export default function LoginPage() {
         form,
         { withCredentials: true }
       );
-      // localStorage.setItem("token", res.data.token);
-      // alert("Login successful!");
-      window.location.href = "/marketplace";
-      
+
+      // 1. Store token via context (writes cookie + sets user)
+      login(res.data.token);
+
+      // 2. Redirect
+      router.push("/marketplace");
     } 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (err: any) {

@@ -1,11 +1,21 @@
+// src/context/UserContext.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
-interface DecodedUser {
+export interface DecodedUser {
   id: number;
+  firstname: string;
+  lastname: string;
+  username: string;
   email: string;
   exp: number;
   iat: number;
@@ -29,32 +39,31 @@ const UserContext = createContext<UserContextType>({
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<DecodedUser | null>(null);
 
+  /** Helper – decode & validate token */
+  const setUserFromToken = (token: string) => {
+    try {
+      const decoded = jwtDecode<DecodedUser>(token);
+      if (decoded.exp * 1000 > Date.now()) {
+        setUser(decoded);
+        // keep cookie in sync (7-day expiry)
+        Cookies.set("token", token, { expires: 7 });
+      } else {
+        throw new Error("expired");
+      }
+    } catch (e) {
+      Cookies.remove("token");
+      setUser(null);
+    }
+  };
+
+  /** On mount – read existing cookie */
   useEffect(() => {
     const token = Cookies.get("token");
-    if (token) {
-      try {
-        const decoded: DecodedUser = jwtDecode(token);
-        // Check token expiration
-        if (decoded.exp * 1000 > Date.now()) {
-          setUser(decoded);
-        } 
-        else {
-          Cookies.remove("token");
-          setUser(null);
-        }
-      } 
-      catch (err) {
-        console.error("Invalid token:", err);
-        Cookies.remove("token");
-        setUser(null);
-      }
-    }
+    if (token) setUserFromToken(token);
   }, []);
 
   const login = (token: string) => {
-    Cookies.set("token", token, { expires: 7 });
-    const decoded: DecodedUser = jwtDecode(token);
-    setUser(decoded);
+    setUserFromToken(token);
   };
 
   const logout = () => {

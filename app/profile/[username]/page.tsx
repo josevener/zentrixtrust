@@ -33,6 +33,8 @@ interface Post {
   created_at: string;
   likes: number;
   liked_by_user: boolean;
+  username: string;
+  user_id: number;
   comments: Comment[];
 }
 
@@ -49,7 +51,7 @@ interface ProfileUser {
 
 export default function ProfilePage() {
   const params = useParams();
-  const id = params.id as string;
+  const usernameParams = params.username as string;
   const { user: currentUser } = useUser();
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -66,23 +68,26 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       try {
         const [userRes, postsRes] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${id}`, {
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/username/${usernameParams}`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${usernameParams}`, {
             params: { userId: currentUser?.id },
           }),
         ]);
         setProfileUser(userRes.data);
         setPosts(postsRes.data);
         setFilteredPosts(postsRes.data);
-      } catch (err) {
+      } 
+      catch (err) {
         console.error("Failed to fetch profile data:", err);
-      } finally {
+      } 
+      finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, [id, currentUser]);
+  }, [usernameParams, currentUser]);
 
+  console.log("username params: ", usernameParams)
   useEffect(() => {
     const filtered = posts.filter(
       (post) =>
@@ -188,7 +193,7 @@ export default function ProfilePage() {
             <CardHeader className="flex flex-col items-center p-6 border-b border-gray-200">
               <Avatar className="h-24 w-24 mb-4">
                 <AvatarImage src={profileUser.avatar || "/default-avatar.png"} alt={fullName} />
-                <AvatarFallback>{profileUser.firstname.charAt(0).toUpperCase()}</AvatarFallback>
+                {/* <AvatarFallback>{profileUser.firstname.charAt(0).toUpperCase()}</AvatarFallback> */}
               </Avatar>
               <h2 className="text-2xl font-bold text-gray-800">{fullName || profileUser.username}</h2>
               <p className="text-sm text-gray-500">@{profileUser.username}</p>
