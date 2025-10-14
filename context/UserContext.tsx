@@ -1,4 +1,3 @@
-// src/context/UserContext.tsx
 "use client";
 
 import {
@@ -10,6 +9,7 @@ import {
 } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
 
 export interface DecodedUser {
   id: number;
@@ -38,7 +38,8 @@ const UserContext = createContext<UserContextType>({
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<DecodedUser | null>(null);
-
+  const router = useRouter();
+  
   /** Helper – decode & validate token */
   const setUserFromToken = (token: string) => {
     try {
@@ -47,10 +48,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser(decoded);
         // keep cookie in sync (7-day expiry)
         Cookies.set("token", token, { expires: 7 });
-      } else {
+      } 
+      else {
         throw new Error("expired");
       }
-    } catch (e) {
+    } 
+    catch (e) {
       Cookies.remove("token");
       setUser(null);
     }
