@@ -20,6 +20,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,6 +32,7 @@ import Image from "next/image";
 import AuthHeader from "@/components/AuthHeader";
 import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 interface Comment {
   id: number;
@@ -85,6 +87,9 @@ export default function MarketplaceClient() {
   const [isSharing, setIsSharing] = useState<{ [key: number]: boolean }>({});
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmBuyOpen, setConfirmBuyOpen] = useState(false);
+  const [postToBuy, setPostToBuy] = useState<Post | null>(null);
+  const router = useRouter();
 
   const categories = [
     "all",
@@ -99,18 +104,18 @@ export default function MarketplaceClient() {
     const fetchPosts = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/posts`,
+          `${PUBLIC_API}/api/posts`,
           {
             params: { userId: user?.id },
           }
         );
         setPosts(res.data);
         setFilteredPosts(res.data);
-
-        console.log(JSON.stringify(res.data, null, 2));
-      } catch (err) {
+      } 
+      catch (err) {
         console.error(`${new Date()} >> Failed to fetch posts:`, err);
-      } finally {
+      } 
+      finally {
         setLoading(false);
       }
     };
@@ -149,7 +154,7 @@ export default function MarketplaceClient() {
 
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts`,
+        `${PUBLIC_API}/api/posts`,
         formData
       );
       const newPostData = {
@@ -172,10 +177,62 @@ export default function MarketplaceClient() {
       setImagePreview(null);
       setIsModalOpen(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (err) {
-      console.error(`${new Date()} >> Failed to create post:`, err);
-    } finally {
+    } 
+    catch (err) {
+      console.error(`Error: >> Failed to create post:`, err);
+    } 
+    finally {
       setIsPosting(false);
+    }
+  };
+
+  const handleBuyNow = async (post: Post) => {
+    if (!user) {
+      toast.error("You must be logged in to buy.");
+      return;
+    }
+
+    try {
+      const {
+        id: postId,
+        user_id: sellerId,
+        price: amount,
+      } = post;
+
+      const body = {
+        postId,
+        buyerId: user.id,
+        sellerId,
+        amount,
+        // paymentId: null, // Initially null; updated by webhook later
+      };
+
+      const res = await axios.post(
+        `${PUBLIC_API}/api/transaction/checkout_session`,
+        body
+        // { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+
+      const { session, transaction } = res.data; // Destructure session and transaction
+      const checkoutUrl = res.data.data.attributes?.checkout_url;
+
+      if (checkoutUrl) {
+        // Optionally store transaction ID in localStorage or context for /success route
+        // localStorage.setItem("lastTransactionId", transaction.id);
+        // Redirect to PayMongo checkout
+        window.location.href = checkoutUrl;
+        router.push(`/messages/${transaction.transaction_uuid}`);
+      } 
+      else {
+        toast.error("Checkout session not created.");
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
+      console.error("BuyNow error:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to start checkout."
+      );
     }
   };
 
@@ -197,7 +254,7 @@ export default function MarketplaceClient() {
     setIsLiking((prev) => ({ ...prev, [postId]: true }));
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/like`,
+        `${PUBLIC_API}/api/posts/${postId}/like`,
         {
           user_id: user.id,
         }
@@ -261,7 +318,7 @@ export default function MarketplaceClient() {
     setIsCommenting((prev) => ({ ...prev, [postId]: true }));
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments`,
+        `${PUBLIC_API}/api/posts/${postId}/comments`,
         {
           user_id: user.id,
           content: newComment[postId],
@@ -674,7 +731,7 @@ export default function MarketplaceClient() {
                       </Link>
                       <Link href={`/messages/${selectedPost.id}`}>
                         <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
-                          Message Seller
+                          Buy Now
                         </Button>
                       </Link>
                     </div>
@@ -1001,19 +1058,21 @@ export default function MarketplaceClient() {
                         >
                           <Button
                             variant="outline"
-                            className="w-full rounded-lg border-gray-300"
+                            className="w-full rounded-lg border-gray-300 cursor-pointer"
                           >
                             View Details
                           </Button>
                         </Link>
-                        <Link
-                          href={`/messages/${post.id}`}
-                          onClick={(e) => e.stopPropagation()}
+                        <Button
+                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPostToBuy(post);
+                            setConfirmBuyOpen(true);
+                          }}
                         >
-                          <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
-                            Message Seller
-                          </Button>
-                        </Link>
+                          Buy Now
+                        </Button>
                       </div>
                     )}
                   </CardContent>
@@ -1025,6 +1084,57 @@ export default function MarketplaceClient() {
             </div>
           )}
         </div>
+        
+      {/* ----------------- BUY CONFIRMATION MODAL ----------------- */}
+        <Dialog open={confirmBuyOpen} onOpenChange={setConfirmBuyOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="italic">Are you sure you want to buy this?</DialogTitle>
+            </DialogHeader>
+
+            {postToBuy && (
+              <div className="space-y-3">
+                {postToBuy.image_url && (
+                  <Image
+                    src={`${PUBLIC_API}${postToBuy.image_url}`}
+                    alt={postToBuy.title}
+                    width={200}
+                    height={120}
+                    className="w-full max-h-[70%] rounded-md object-cover"
+                  />
+                )}
+                <p>
+                  <strong>{postToBuy.title}</strong>
+                </p>
+                <p className="text-lg font-semibold">
+                  ₱{postToBuy.price.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Seller: <span className="font-medium">{postToBuy.username}</span>
+                </p>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => setConfirmBuyOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+                onClick={async () => {
+                  if (postToBuy) await handleBuyNow(postToBuy);
+                  setConfirmBuyOpen(false);
+                }}
+              >
+                Yes, proceed
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Right Sidebar: Recent Transactions */}
         <div className="w-64 fixed top-[5rem] right-0 h-[calc(100vh-5rem)] p-4 rounded-lg hidden xl:block">
