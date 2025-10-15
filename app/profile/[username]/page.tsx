@@ -16,7 +16,6 @@ import {
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 import Link from "next/link";
@@ -136,6 +135,7 @@ export default function ProfilePage() {
 
   const handleLike = async (postId: number) => {
     if (!currentUser) return;
+    setIsLiking((prev) => ({ ...prev, [postId]: true }));
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/like`,
@@ -171,10 +171,14 @@ export default function ProfilePage() {
     catch (err) {
       console.error("Failed to like post:", err);
     }
+    finally {
+      setIsLiking((prev) => ({ ...prev, [postId]: false }));
+    }
   };
 
   const handleCommentSubmit = async (postId: number) => {
     if (!currentUser || !newComment[postId]?.trim()) return;
+    setIsCommenting((prev) => ({ ...prev, [postId]: true }));
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments`,
@@ -213,6 +217,9 @@ export default function ProfilePage() {
     catch (err) {
       console.error("Failed to add comment:", err);
     }
+    finally {
+      setIsCommenting((prev) => ({ ...prev, [postId]: false }));
+    }
   };
 
   const handleShare = (postId: number) => {
@@ -242,6 +249,7 @@ export default function ProfilePage() {
     setSelectedPost(post);
   };
 
+  console.log("filteredPosts: ", JSON.stringify(filteredPosts, null, 2))
   return (
     <>
       <AuthHeader />
@@ -312,7 +320,7 @@ export default function ProfilePage() {
                     ) : (
                       <Avatar className="h-10 w-10 border-2">
                         <AvatarImage
-                          src="/default-avatar.png"
+                          src="/assets/images/default_user.png"
                           alt={selectedPost.username || "Anonymous"}
                         />
                         <AvatarFallback>
@@ -404,21 +412,23 @@ export default function ProfilePage() {
                       {isSharing[selectedPost.id] ? "Sharing..." : "Share"}
                     </Button>
                   </div>
-                  <div className="flex gap-2">
-                    <Link href={`/post/${selectedPost.id}`}>
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-lg border-gray-300"
-                      >
-                        View Details
-                      </Button>
-                    </Link>
-                    <Link href={`/messages/${selectedPost.id}`}>
-                      <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
-                        Message Seller
-                      </Button>
-                    </Link>
-                  </div>
+                  {currentUser?.username !== selectedPost.username && (
+                    <div className="flex gap-2">
+                      <Link href={`/post/${selectedPost.id}`}>
+                        <Button
+                          variant="outline"
+                          className="w-full rounded-lg border-gray-300"
+                        >
+                          View Details
+                        </Button>
+                      </Link>
+                      <Link href={`/messages/${selectedPost.id}`}>
+                        <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
+                          Message Seller
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                   <Collapsible
                     open={openComments[selectedPost.id]}
                     onOpenChange={(open) =>
@@ -439,7 +449,7 @@ export default function ProfilePage() {
                           ) : (
                             <Avatar className="h-8 w-8 flex-shrink-0">
                               <AvatarImage
-                                src="/default-avatar.png"
+                                src="/assets/images/default_user.png"
                                 alt={comment.username || "Anonymous"}
                               />
                               <AvatarFallback>
@@ -470,7 +480,7 @@ export default function ProfilePage() {
                     ) : (
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage
-                          src={currentUser?.avatar || "/default-avatar.png"}
+                          src={currentUser?.avatar || "/assets/images/default_user.png"}
                           alt={currentUser?.username || currentUser?.email}
                         />
                         <AvatarFallback>
@@ -519,7 +529,7 @@ export default function ProfilePage() {
                     ) : (
                       <Avatar className="h-10 w-10 border-2">
                         <AvatarImage
-                          src="/default-avatar.png"
+                          src="/assets/images/default_user.png"
                           alt={post.username || "Anonymous"}
                         />
                         <AvatarFallback>
@@ -550,7 +560,7 @@ export default function ProfilePage() {
                     className="px-4 cursor-pointer"
                     onClick={() => handlePostClick(post)}
                   >
-                    <div className="hover:bg-gray-100">
+                    <div className={`${post.image_url ? 'hover:bg-gray-100' : ''}`}>
                       <h3 className="text-lg font-semibold">{post.title}</h3>
                       <p className="text-gray-600 mb-2 font-semibold">
                         ₱{post.price.toLocaleString()}
@@ -631,7 +641,7 @@ export default function ProfilePage() {
                             ) : (
                               <Avatar className="h-8 w-8 flex-shrink-0">
                                 <AvatarImage
-                                  src="/default-avatar.png"
+                                  src="/assets/images/default_user.png"
                                   alt={comment.username || "Anonymous"}
                                 />
                                 <AvatarFallback>
@@ -662,7 +672,7 @@ export default function ProfilePage() {
                       ) : (
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage
-                            src={currentUser?.avatar || "/default-avatar.png"}
+                            src={currentUser?.avatar || "/assets/images/default_user.png"}
                             alt={currentUser?.username || currentUser?.email}
                           />
                           <AvatarFallback>
@@ -696,27 +706,29 @@ export default function ProfilePage() {
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
-                    <div className="flex gap-2 mt-4">
-                      <Link
-                        href={`/post/${post.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          variant="outline"
-                          className="w-full rounded-lg border-gray-300"
+                    {currentUser?.username !== post.username && (
+                      <div className="flex gap-2 mt-4">
+                        <Link
+                          href={`/post/${post.id}`}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          View Details
-                        </Button>
-                      </Link>
-                      <Link
-                        href={`/messages/${post.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
-                          Message Seller
-                        </Button>
-                      </Link>
-                    </div>
+                          <Button
+                            variant="outline"
+                            className="w-full rounded-lg border-gray-300"
+                          >
+                            View Details
+                          </Button>
+                        </Link>
+                        <Link
+                          href={`/messages/${post.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg">
+                            Message Seller
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

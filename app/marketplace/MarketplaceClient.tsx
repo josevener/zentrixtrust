@@ -16,7 +16,6 @@ import {
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
   Dialog,
@@ -248,9 +247,11 @@ export default function MarketplaceClient() {
             : prev
         );
       }
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("Failed to like post:", err);
-    } finally {
+    } 
+    finally {
       setIsLiking((prev) => ({ ...prev, [postId]: false }));
     }
   };
@@ -296,9 +297,11 @@ export default function MarketplaceClient() {
         );
       }
       setNewComment((prev) => ({ ...prev, [postId]: "" }));
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("Failed to add comment:", err);
-    } finally {
+    } 
+    finally {
       setIsCommenting((prev) => ({ ...prev, [postId]: false }));
     }
   };
