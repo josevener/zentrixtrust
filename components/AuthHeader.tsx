@@ -28,7 +28,7 @@ export default function AuthHeader() {
 
   return (
     <header className="sticky w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-emerald-100">
-      <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
+      <div className="w-full mx-auto flex justify-between items-center p-4">
         {/* Logo */}
         <Link
           href="/marketplace"
