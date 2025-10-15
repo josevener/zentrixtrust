@@ -56,6 +56,8 @@ interface Post {
   comments: Comment[];
 }
 
+const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
+
 export default function MarketplaceClient() {
   const { user } = useUser();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -594,14 +596,11 @@ export default function MarketplaceClient() {
                   </div>
                   {selectedPost.image_url && (
                     <Image
-                      src={
-                        selectedPost.image_url ??
-                        "/assets/images/default_item.jpg"
-                      }
+                      src={`${PUBLIC_API}${selectedPost.image_url}`}
                       alt={selectedPost.title}
-                      width={600}
-                      height={400}
-                      className="w-full h-auto max-h-[500px] object-cover rounded-lg"
+                      width={300}
+                      height={200}
+                      className="w-full h-auto max-h-[250px] cover-fit rounded-lg"
                     />
                   )}
                   <p className="text-gray-600 font-semibold">
@@ -619,7 +618,7 @@ export default function MarketplaceClient() {
                         selectedPost.liked_by_user
                           ? "text-red-600"
                           : "text-gray-500"
-                      } hover:bg-gray-100`}
+                      } hover:bg-gray-100 cursor-pointer`}
                       disabled={isLiking[selectedPost.id]}
                     >
                       <Heart
@@ -627,11 +626,9 @@ export default function MarketplaceClient() {
                           selectedPost.liked_by_user ? "fill-red-600" : ""
                         }`}
                       />
-                      {isLiking[selectedPost.id]
-                        ? "Liking..."
-                        : `${selectedPost.likes} ${
-                            selectedPost.likes === 1 ? "Like" : "Likes"
-                          }`}
+                      {`${selectedPost.likes} ${
+                          selectedPost.likes === 1 ? "Like" : "Likes"
+                      }`}
                     </Button>
                     <Button
                       variant="ghost"
@@ -642,7 +639,7 @@ export default function MarketplaceClient() {
                           [selectedPost.id]: !prev[selectedPost.id],
                         }))
                       }
-                      className="flex-1 hover:bg-gray-100"
+                      className="flex-1 hover:bg-gray-100 cursor-pointer"
                     >
                       <MessageCircle className="h-5 w-5 mr-2 text-gray-500" />
                       {selectedPost.comments.length}{" "}
@@ -654,7 +651,7 @@ export default function MarketplaceClient() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleShare(selectedPost.id)}
-                      className="flex-1 text-gray-500 hover:bg-gray-100"
+                      className="flex-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
                       disabled={isSharing[selectedPost.id]}
                     >
                       <Share2 className="h-5 w-5 mr-2" />
@@ -848,7 +845,7 @@ export default function MarketplaceClient() {
                     </div>
                   </CardHeader>
                   <CardContent
-                    className="px-4 cursor-pointer"
+                    className="px-4 cursor-pointers"
                     onClick={() => handlePostClick(post)}
                   >
                     <div className="hover:bg-gray-100">
@@ -863,13 +860,11 @@ export default function MarketplaceClient() {
 
                     {post.image_url && (
                       <Image
-                        src={
-                          post.image_url ?? "/assets/images/default_item.jpg"
-                        }
+                        src={`${PUBLIC_API}${post.image_url}`}
                         alt={post.title}
                         width={600}
                         height={400}
-                        className="w-full h-auto max-h-[500px] object-cover rounded-lg mb-4"
+                        className="w-full h-auto max-h-[500px] border object-cover rounded-lg mb-4"
                       />
                     )}
                     <div className="flex gap-2 mb-4 border-t border-b border-gray-200 py-2">

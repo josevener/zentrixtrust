@@ -64,6 +64,8 @@ interface ProfileUser {
   created_at: string;
 }
 
+const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
+
 export default function ProfilePage() {
   const params = useParams();
   const usernameParams = params.username as string;
@@ -338,10 +340,7 @@ export default function ProfilePage() {
                   </div>
                   {selectedPost.image_url && (
                     <Image
-                      src={
-                        selectedPost.image_url ??
-                        "/assets/images/default_item.jpg"
-                      }
+                      src={`${PUBLIC_API}${selectedPost.image_url}`}
                       alt={selectedPost.title}
                       width={600}
                       height={400}
@@ -563,9 +562,7 @@ export default function ProfilePage() {
 
                     {post.image_url && (
                       <Image
-                        src={
-                          post.image_url ?? "/assets/images/default_item.jpg"
-                        }
+                        src={`${PUBLIC_API}${post.image_url}`}
                         alt={post.title}
                         width={600}
                         height={400}
