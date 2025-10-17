@@ -33,29 +33,7 @@ import AuthHeader from "@/components/AuthHeader";
 import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-
-interface Comment {
-  id: number;
-  user_id: number;
-  username: string;
-  content: string;
-  timestamp: string;
-}
-
-interface Post {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  image_url: string | null;
-  user_id: number;
-  username: string;
-  category: string | null;
-  created_at: string;
-  likes: number;
-  liked_by_user: boolean;
-  comments: Comment[];
-}
+import { Post } from "@/types/marketplace";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -187,7 +165,7 @@ export default function MarketplaceClient() {
     }
   };
 
-  const handleBuyNow = async (post: Post) => {
+  const handleTransaction = async (post: Post) => {
     if (!user) {
       toast.error("You must be logged in to buy.");
       return;
@@ -206,34 +184,27 @@ export default function MarketplaceClient() {
         buyerId: user.id,
         sellerId,
         amount,
-        // paymentId: null, // Initially null; updated by webhook later
       };
 
       const res = await axios.post(
-        `${PUBLIC_API}/api/transaction/checkout_session`,
+        `${PUBLIC_API}/api/transaction/checkout_transaction`,
         body
-        // { headers: { Authorization: `Bearer ${user.token}` } }
       );
 
-      const { session, transaction } = res.data; // Destructure session and transaction
-      const checkoutUrl = session.attributes?.checkout_url;
+      const { transaction } = res.data;
 
-      if (checkoutUrl) {
-        // Optionally store transaction ID in localStorage or context for /success route
-        // localStorage.setItem("lastTransactionId", transaction.id);
-        // Redirect to PayMongo checkout
+      if (transaction) {
         router.push(`/messages/t/${transaction.transaction_uuid}`);
-        window.location.href = checkoutUrl;
       } 
       else {
-        toast.error("Checkout session not created.");
+        toast.error("Transaction is invalid.");
       }
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (error: any) {
-      console.error("BuyNow error:", error);
+      console.error("Transaction error:", error);
       toast.error(
-        error.response?.data?.error || "Failed to start checkout."
+        error.response?.data?.error || "Transaction failed."
       );
     }
     finally {
@@ -457,7 +428,7 @@ export default function MarketplaceClient() {
                   ) : (
                     <Avatar className="h-10 w-10 border-2">
                       <AvatarImage
-                        src={user.avatar || "/default-avatar.png"}
+                        src={user.avatar || "/assets/images/default_user.png"}
                         alt={user.username}
                       />
                       <AvatarFallback>
@@ -468,8 +439,6 @@ export default function MarketplaceClient() {
                   )}
                   <Input
                     placeholder="What's for sale?"
-                    // value={newPost.title}
-                    // onChange={(e) => setNewPost((prev) => ({ ...prev, title: e.target.value }))}
                     onFocus={() => setIsModalOpen(true)}
                     className="flex-1 rounded-full border-gray-300"
                   />
@@ -633,7 +602,7 @@ export default function MarketplaceClient() {
                     ) : (
                       <Avatar className="h-10 w-10 border-2">
                         <AvatarImage
-                          src="/default-avatar.png"
+                          src="/assets/images/default_user.png"
                           alt={selectedPost.username || "Anonymous"}
                         />
                         <AvatarFallback>
@@ -761,7 +730,7 @@ export default function MarketplaceClient() {
                           ) : (
                             <Avatar className="h-8 w-8 flex-shrink-0">
                               <AvatarImage
-                                src="/default-avatar.png"
+                                src="/assets/images/default_user.png"
                                 alt={comment.username || "Anonymous"}
                               />
                               <AvatarFallback>
@@ -792,7 +761,7 @@ export default function MarketplaceClient() {
                     ) : (
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage
-                          src={user?.avatar || "/default-avatar.png"}
+                          src={user?.avatar || "/assets/images/default_user.png"}
                           alt={user?.username || user?.email}
                         />
                         <AvatarFallback>
@@ -882,7 +851,7 @@ export default function MarketplaceClient() {
                     ) : (
                       <Avatar className="h-10 w-10 border-2">
                         <AvatarImage
-                          src="/default-avatar.png"
+                          src="/assets/images/default_user.png"
                           alt={post.username || "Anonymous"}
                         />
                         <AvatarFallback>
@@ -994,7 +963,7 @@ export default function MarketplaceClient() {
                             ) : (
                               <Avatar className="h-8 w-8 flex-shrink-0">
                                 <AvatarImage
-                                  src="/default-avatar.png"
+                                  src="/assets/images/default_user.png"
                                   alt={comment.username || "Anonymous"}
                                 />
                                 <AvatarFallback>
@@ -1025,7 +994,7 @@ export default function MarketplaceClient() {
                       ) : (
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage
-                            src={user?.avatar || "/default-avatar.png"}
+                            src={user?.avatar || "/assets/images/default_user.png"}
                             alt={user?.username || user?.email}
                           />
                           <AvatarFallback>
@@ -1131,12 +1100,12 @@ export default function MarketplaceClient() {
               <Button
                 className="bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
                 onClick={async () => {
-                  if (postToBuy) await handleBuyNow(postToBuy);
+                  if (postToBuy) await handleTransaction(postToBuy);
                   setConfirmBuyOpen(false);
                 }}
                 disabled={isBuying}
               >
-                {isBuying ? 'Proceeding...' : 'Yes, proceed'}
+                {isBuying ? 'Buying...' : 'Yes, I want to buy it'}
               </Button>
             </DialogFooter>
           </DialogContent>

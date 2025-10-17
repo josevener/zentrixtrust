@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,10 @@ import {
 } from "@/components/ui/tooltip";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Post } from "@/types/marketplace";
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300");
+const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Message {
   id: number;
@@ -33,6 +35,7 @@ interface Message {
 interface UserProfile {
   id: number;
   username: string;
+  fullname?: string;
   avatar?: string;
 }
 
@@ -46,9 +49,12 @@ export default function ChatRoomPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [recipient, setRecipient] = useState<UserProfile | null>(null);
+  const [isBuying, setIsBuying] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
 
   // Map roomId to transaction_id
   const transactionUUID = Array.isArray(roomId) ? roomId[0] : roomId;
@@ -132,6 +138,60 @@ export default function ChatRoomPage() {
       console.error("Error uploading images:", err);
       toast.error("Failed to upload images");
       return [];
+    }
+  };
+
+  const handleBuyNow = async (post: Post) => {
+    if (!user) {
+      toast.error("You must be logged in to buy.");
+      return;
+    }
+
+    setIsBuying(true);
+    try {
+      const {
+        id: postId,
+        user_id: sellerId,
+        price: amount,
+      } = post;
+
+      const body = {
+        postId,
+        buyerId: user.id,
+        sellerId,
+        amount,
+        // paymentId: null, // Initially null; updated by webhook later
+      };
+
+      const res = await axios.post(
+        `${PUBLIC_API}/api/transaction/checkout_session`,
+        body
+        // { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+
+      const { session, transaction } = res.data; // Destructure session and transaction
+      const checkoutUrl = session.attributes?.checkout_url;
+
+      if (checkoutUrl) {
+        // Optionally store transaction ID in localStorage or context for /success route
+        // localStorage.setItem("lastTransactionId", transaction.id);
+        // Redirect to PayMongo checkout
+        router.push(`/messages/t/${transaction.transaction_uuid}`);
+        window.location.href = checkoutUrl;
+      } 
+      else {
+        toast.error("Checkout session not created.");
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
+      console.error("BuyNow error:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to start checkout."
+      );
+    }
+    finally {
+      setIsBuying(false);
     }
   };
 
