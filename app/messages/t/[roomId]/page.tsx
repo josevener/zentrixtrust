@@ -51,18 +51,18 @@ export default function ChatRoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Map roomId to transaction_id
-  const transactionId = Array.isArray(roomId) ? roomId[0] : roomId;
-  const socketRoom = `transaction_${transactionId}`;
+  const transactionUUID = Array.isArray(roomId) ? roomId[0] : roomId;
+  const socketRoom = `transaction_${transactionUUID}`;
 
   // Fetch recipient and initial messages
   useEffect(() => {
-    if (!user || !transactionId) return;
+    if (!user || !transactionUUID) return;
 
     // Fetch recipient (assuming transaction_id maps to a post, which has a seller)
     const fetchRecipient = async () => {
       try {
         // Assuming /api/posts/:id returns post with user_id
-        const postRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${transactionId}`);
+        const postRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${transactionUUID}`);
         const sellerId = postRes.data.user_id;
         const userRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${sellerId}`);
         setRecipient(userRes.data);
@@ -76,7 +76,7 @@ export default function ChatRoomPage() {
     // Fetch initial messages
     const fetchMessages = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/${transactionId}`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/${transactionUUID}`);
         setMessages(res.data.data);
       } 
       catch (err) {
@@ -87,7 +87,7 @@ export default function ChatRoomPage() {
 
     fetchRecipient();
     fetchMessages();
-  }, [transactionId, user]);
+  }, [transactionUUID, user]);
 
   // Socket.IO setup
   useEffect(() => {
@@ -147,7 +147,7 @@ export default function ChatRoomPage() {
 
       const msg: Message = {
         id: Date.now(), // Temporary ID, replaced by backend
-        transaction_id: transactionId!,
+        transaction_id: transactionUUID!,
         sender_id: user.id,
         sender_name: user.username || user.email.split("@")[0] || "Anonymous",
         content: text,
@@ -160,7 +160,7 @@ export default function ChatRoomPage() {
 
       // Persist to backend
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/messages`, {
-        transaction_id: transactionId,
+        transaction_id: transactionUUID,
         sender_id: user.id,
         content: text,
         images: imageUrls,

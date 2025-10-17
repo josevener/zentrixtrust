@@ -89,6 +89,7 @@ export default function MarketplaceClient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [confirmBuyOpen, setConfirmBuyOpen] = useState(false);
   const [postToBuy, setPostToBuy] = useState<Post | null>(null);
+  const [isBuying, setIsBuying] = useState(false);
   const router = useRouter();
 
   const categories = [
@@ -192,6 +193,7 @@ export default function MarketplaceClient() {
       return;
     }
 
+    setIsBuying(true);
     try {
       const {
         id: postId,
@@ -214,14 +216,14 @@ export default function MarketplaceClient() {
       );
 
       const { session, transaction } = res.data; // Destructure session and transaction
-      const checkoutUrl = res.data.data.attributes?.checkout_url;
+      const checkoutUrl = session.attributes?.checkout_url;
 
       if (checkoutUrl) {
         // Optionally store transaction ID in localStorage or context for /success route
         // localStorage.setItem("lastTransactionId", transaction.id);
         // Redirect to PayMongo checkout
+        router.push(`/messages/t/${transaction.transaction_uuid}`);
         window.location.href = checkoutUrl;
-        router.push(`/messages/${transaction.transaction_uuid}`);
       } 
       else {
         toast.error("Checkout session not created.");
@@ -233,6 +235,9 @@ export default function MarketplaceClient() {
       toast.error(
         error.response?.data?.error || "Failed to start checkout."
       );
+    }
+    finally {
+      setIsBuying(false);
     }
   };
 
@@ -1129,8 +1134,9 @@ export default function MarketplaceClient() {
                   if (postToBuy) await handleBuyNow(postToBuy);
                   setConfirmBuyOpen(false);
                 }}
+                disabled={isBuying}
               >
-                Yes, proceed
+                {isBuying ? 'Proceeding...' : 'Yes, proceed'}
               </Button>
             </DialogFooter>
           </DialogContent>
