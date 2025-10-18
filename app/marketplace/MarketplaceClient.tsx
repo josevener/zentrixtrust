@@ -187,7 +187,7 @@ export default function MarketplaceClient() {
       };
 
       const res = await axios.post(
-        `${PUBLIC_API}/api/transaction/checkout_transaction`,
+        `${PUBLIC_API}/api/transactions/checkout_transaction`,
         body
       );
 
