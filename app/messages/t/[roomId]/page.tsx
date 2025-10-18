@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import { toast } from "sonner";
 import { Transaction, UserProfile } from "@/types/transaction";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300";
 
@@ -151,41 +152,38 @@ export default function TransactionDetailsPage() {
       <div className="w-full max-w-4xl space-y-6">
         {/* Header with Seller Info and Message Button */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center justify-between">
-          <TooltipProvider>
-            <Tooltip>
-              <Link href={`/profile/${transaction.username}`}>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <User className="h-6 w-6 text-emerald-700" />
-                  </div>
-                  <TooltipTrigger asChild>
-                    <h2 className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
-                      {seller.username || transaction.seller_name || "Seller"}
-                    </h2>
-                  </TooltipTrigger>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Link href={`/profile/${transaction.username}`} className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <User className="h-6 w-6 text-emerald-700" />
                 </div>
+                <h2 className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
+                  {seller.username || transaction.seller_name || "Seller"}
+                </h2>
               </Link>
-              <TooltipContent className="bg-white rounded-lg shadow-lg p-4 w-72">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-emerald-700" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {seller.username || transaction.seller_name || "Seller"}
-                    </p>
-                    <p className="text-xs text-gray-500">Online</p>
-                  </div>
+            </HoverCardTrigger>
+
+            <HoverCardContent className="bg-white rounded-lg shadow-lg p-4 w-72">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <User className="h-5 w-5 text-emerald-700" />
                 </div>
-                <Link
-                  href={`/profile/${transaction.username}`}
-                  className="text-xs text-emerald-600 hover:underline mt-2 block"
-                >
-                  View full profile
-                </Link>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {seller.username || transaction.seller_name || "Seller"}
+                  </p>
+                  <p className="text-xs text-gray-500">Online</p>
+                </div>
+              </div>
+              <Link
+                href={`/profile/${transaction.username}`}
+                className="text-xs text-emerald-600 hover:underline mt-2 block"
+              >
+                View full profile
+              </Link>
+            </HoverCardContent>
+          </HoverCard>
           <Button
             variant="outline"
             className="relative border-emerald-200 hover:bg-emerald-50"
