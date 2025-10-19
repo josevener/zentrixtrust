@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
-const protectedRoutes = ["/marketplace", "/profile", "/dashboard"];
+const protectedRoutes = ["/marketplace", "/profile", "/dashboard", "/messages"];
 const authRoutes = ["/login", "/signup"]; // public routes where logged-in users should NOT go
 
 export function middleware(req: NextRequest) {
@@ -48,6 +48,7 @@ export const config = {
   matcher: [
     "/marketplace/:path*",
     "/profile/:path*",
+    "/messages/:path*",
     "/dashboard/:path*",
     "/login",
     "/signup",

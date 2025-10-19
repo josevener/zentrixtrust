@@ -20,9 +20,8 @@ export default function AuthHeader() {
 
   const navItems = [
     { href: "/marketplace", label: "Marketplace" },
-    { href: "/ongoing", label: "Ongoing" },
-    { href: "/completed", label: "Completed" },
-    { href: "/cancelled", label: "Cancelled" },
+    { href: "/analytics", label: "Analytics" },
+    { href: "/transactions/my_transactions", label: "My Transactions" },
     { href: `/profile/${user?.username}`, label: "Profile" },
   ];
 

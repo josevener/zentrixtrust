@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export default function TransactionDetailsPage() {
   const [unreadMessages, setUnreadMessages] = useState(3); // Mock unread message count
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const router = useRouter();
 
   const transactionUUID = Array.isArray(roomId) ? roomId[0] : roomId;
 
@@ -75,20 +76,25 @@ export default function TransactionDetailsPage() {
 
     setIsReleasing(true);
     try {
-      await axios.post(
-        `${PUBLIC_API}/api/transactions/${transactionUUID}/release`,
+      const res = await axios.post(
+        `${PUBLIC_API}/api/transactions/checkout_session`,
         {
-          transactionId: transaction.id,
+          transactionUUID: transaction.transaction_uuid,
           buyerId: user.id,
           paymentMethod: method,
+          amount: transaction.amount,
         }
       );
-      toast.success(`Payment released via ${method} successfully!`);
-      const transactionRes = await axios.get(
-        `${PUBLIC_API}/api/transactions/${transactionUUID}`
-      );
-      setTransaction(transactionRes.data);
+      
+      const checkoutUrl = res.data.attributes?.checkout_url;
+
       setIsPaymentModalOpen(false);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } 
+      else {
+        toast.error("Checkout session not created.");
+      }
     } 
     catch (err) {
       console.error("Error releasing payment:", err);
@@ -109,19 +115,11 @@ export default function TransactionDetailsPage() {
 
     setIsCanceling(true);
     try {
-      await axios.post(
-        `${PUBLIC_API}/api/transactions/${transactionUUID}/cancel`,
-        {
-          transactionId: transaction.id,
-          buyerId: user.id,
-        }
-      );
-      toast.success("Transaction canceled successfully!");
-      const transactionRes = await axios.get(
-        `${PUBLIC_API}/api/transactions/${transactionUUID}`
-      );
-      setTransaction(transactionRes.data);
+      const res = await axios.put(`${PUBLIC_API}/api/transactions/${transactionUUID}/cancel`);
+
+      setTransaction(res.data);
       setIsCancelModalOpen(false);
+      toast.success("Transaction canceled successfully!");
     } 
     catch (err) {
       console.error("Error canceling transaction:", err);
@@ -141,10 +139,10 @@ export default function TransactionDetailsPage() {
   }
 
   const paymentMethods = [
-    { name: "QR Code", icon: "/assets/icons/QRPh.png" },
-    { name: "Debit/Credit Card", icon: "/assets/icons/debit_credit_card.jpg" },
-    { name: "Gcash", icon: "/assets/icons/gcash.png" },
-    { name: "Paymaya", icon: "/assets/icons/paymaya.jpg" },
+    { code: "qrph", name: "QR Code", icon: "/assets/icons/QRPh.png" },
+    { code: "card", name: "Debit/Credit Card", icon: "/assets/icons/debit_credit_card.jpg" },
+    { code: "gcash", name: "Gcash", icon: "/assets/icons/gcash.png" },
+    { code: "paymaya", name: "Paymaya", icon: "/assets/icons/paymaya.jpg" },
   ];
 
   return (
@@ -154,13 +152,15 @@ export default function TransactionDetailsPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center justify-between">
           <HoverCard>
             <HoverCardTrigger asChild>
-              <Link href={`/profile/${transaction.username}`} className="flex items-center gap-4">
+              <Link href={`/profile/${transaction.seller_username}`} className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                   <User className="h-6 w-6 text-emerald-700" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
-                  {seller.username || transaction.seller_name || "Seller"}
+                  {transaction.seller_name ?? "Loading..."}
                 </h2>
+                <p>@{transaction.seller_username}</p>
+                <p>{transaction.seller_email}</p>
               </Link>
             </HoverCardTrigger>
 
@@ -171,13 +171,13 @@ export default function TransactionDetailsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    {seller.username || transaction.seller_name || "Seller"}
+                    {transaction.seller_name ?? "Loading..."}
                   </p>
                   <p className="text-xs text-gray-500">Online</p>
                 </div>
               </div>
               <Link
-                href={`/profile/${transaction.username}`}
+                href={`/profile/${transaction.seller_username}`}
                 className="text-xs text-emerald-600 hover:underline mt-2 block"
               >
                 View full profile
@@ -189,7 +189,7 @@ export default function TransactionDetailsPage() {
             className="relative border-emerald-200 hover:bg-emerald-50"
             asChild
           >
-            <Link href={`/messages/${transactionUUID}`}>
+            <Link href={`/messages/c/${transactionUUID}`}>
               <MessageCircle className="h-5 w-5 text-emerald-600" />
               {unreadMessages > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -269,7 +269,9 @@ export default function TransactionDetailsPage() {
                     transaction.status === "pending"
                       ? "text-yellow-600"
                       : transaction.status === "completed"
-                      ? "text-green-600"
+                      ? "text-green-600" 
+                      : transaction.status === "released" 
+                      ? "text-blue-600"
                       : "text-red-600"
                   }`}
                 >
@@ -336,7 +338,7 @@ export default function TransactionDetailsPage() {
             <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
               <DialogTrigger asChild>
                 <Button
-                  className="bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2"
+                  className="bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2 cursor-pointer"
                   disabled={isReleasing || isCanceling || transaction.status !== "pending"}
                 >
                   {isReleasing ? (
@@ -357,8 +359,8 @@ export default function TransactionDetailsPage() {
                     <Button
                       key={method.name}
                       variant="outline"
-                      className="flex flex-col items-center justify-center h-24 border-gray-200 hover:bg-emerald-50"
-                      onClick={() => handleReleasePayment(method.name)}
+                      className="flex flex-col items-center justify-center h-24 border-gray-200 hover:bg-emerald-50 cursor-pointer"
+                      onClick={() => handleReleasePayment(method.code)}
                       disabled={isReleasing || isCanceling}
                     >
                       <Image
@@ -366,7 +368,7 @@ export default function TransactionDetailsPage() {
                         alt={`${method.name} icon`}
                         width={40}
                         height={40}
-                        className="mb-2"
+                        className="mb-2 w-auto h-auto"
                       />
                       <span className="text-sm font-medium">{method.name}</span>
                     </Button>

@@ -1,8 +1,10 @@
 export interface Message {
   id: number;
-  transaction_id: string;
+  transaction_uuid: string;
   sender_id: number;
+  receiver_id: number;
   sender_name: string;
+  receiver_name: string;
   content: string;
   images?: string[];
   timestamp: string;
@@ -11,6 +13,7 @@ export interface Message {
 export interface UserProfile {
   id: number;
   username: string;
+  seller_name: string;
   fullname?: string;
   email: string;
   mobile_number: string;
@@ -20,8 +23,12 @@ export interface UserProfile {
 export interface Transaction {
   id: string;
   transaction_uuid: string;
+  buyer_name: string;
+  buyer_username: string;
+  buyer_email: string;
   seller_name: string;
-  username: string;
+  seller_username: string;
+  seller_email: string;
   title: string;
   description: string;
   post_image_url: string;
