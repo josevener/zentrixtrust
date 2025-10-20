@@ -81,10 +81,13 @@ export default function AuthHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/profile/${user?.username}`}>Profile</Link>
+                <Link href={`/wallet/${user?.username}`} className="cursor-pointer">My Wallet</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
+                <Link href={`/profile/${user?.username}`} className="cursor-pointer">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
