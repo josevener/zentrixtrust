@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Loader2, DollarSign, List, ArrowUpCircle, ArrowDownCircle, Search } from "lucide-react";
+import { Loader2, List, ArrowUpCircle, ArrowDownCircle, Search } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";

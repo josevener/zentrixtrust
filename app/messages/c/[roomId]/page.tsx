@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { useParams, useRouter } from "next/navigation";

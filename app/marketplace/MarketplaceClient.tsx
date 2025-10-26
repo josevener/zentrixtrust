@@ -194,7 +194,7 @@ export default function MarketplaceClient() {
       const { transaction } = res.data;
 
       if (transaction) {
-        router.push(`/messages/t/${transaction.transaction_uuid}`);
+        router.push(`/messages/t/${transaction.uuid}`);
       } 
       else {
         toast.error("Transaction is invalid.");
@@ -527,10 +527,12 @@ export default function MarketplaceClient() {
                   />
                   {imagePreview && (
                     <div className="relative max-w-[100px] border-2 border-gray-300">
-                      <img
+                      <Image
                         src={imagePreview}
                         alt="Preview"
-                        className="w-full rounded-lg"
+                        height={45}
+                        width={45}
+                        className="w-full w-auto h-auto rounded-lg"
                       />
                       <Button
                         variant="destructive"

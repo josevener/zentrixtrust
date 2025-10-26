@@ -87,6 +87,7 @@ const mockTransactions = [
 export default function TransactionAnalyticsPage() {
   const { user } = useUser();
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

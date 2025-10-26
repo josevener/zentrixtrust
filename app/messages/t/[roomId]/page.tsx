@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { User, MessageCircle } from "lucide-react";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -35,10 +29,9 @@ export default function TransactionDetailsPage() {
   const [seller, setSeller] = useState<UserProfile | null>(null);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(3); // Mock unread message count
+  // const [unreadMessages, setUnreadMessages] = useState(3); // Mock unread message count
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const router = useRouter();
 
   const transactionUUID = Array.isArray(roomId) ? roomId[0] : roomId;
 
@@ -79,7 +72,7 @@ export default function TransactionDetailsPage() {
       const res = await axios.post(
         `${PUBLIC_API}/api/transactions/checkout_session`,
         {
-          transactionUUID: transaction.transaction_uuid,
+          transactionUUID: transaction.uuid,
           buyerId: user.id,
           paymentMethod: method,
           amount: transaction.amount,
@@ -191,11 +184,11 @@ export default function TransactionDetailsPage() {
           >
             <Link href={`/messages/c/${transactionUUID}`}>
               <MessageCircle className="h-5 w-5 text-emerald-600" />
-              {unreadMessages > 0 && (
+              {/* {unreadMessages > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {unreadMessages}
                 </span>
-              )}
+              )} */}
             </Link>
           </Button>
         </div>

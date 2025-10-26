@@ -83,6 +83,8 @@ export default function ProfilePage() {
   const [isCommenting, setIsCommenting] = useState<{ [key: number]: boolean }>(
     {}
   );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSharing, setIsSharing] = useState<{ [key: number]: boolean }>({});
   const categories = [
     "all",

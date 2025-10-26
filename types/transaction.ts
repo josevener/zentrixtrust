@@ -22,7 +22,7 @@ export interface UserProfile {
 
 export interface Transaction {
   id: string;
-  transaction_uuid: string;
+  uuid: string;
   buyer_name: string;
   buyer_username: string;
   buyer_email: string;
