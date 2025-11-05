@@ -13,6 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import AuthHeader from "@/components/AuthHeader";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300";
 const socket = io(PUBLIC_API);
@@ -122,7 +123,8 @@ export default function ChatRoomPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       return res.data.imageUrls || [];
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("Error uploading images:", err);
       toast.error("Failed to upload images");
       return [];
@@ -160,10 +162,12 @@ export default function ChatRoomPage() {
       setImagePreviews([]);
       setImageFiles([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (err: any) {
+    } 
+    catch (err: any) {
       console.error("Error sending message:", err);
       toast.error(err.response?.data?.error || "Failed to send message");
-    } finally {
+    } 
+    finally {
       setIsSending(false);
     }
   };
@@ -198,7 +202,8 @@ export default function ChatRoomPage() {
           }
         };
         reader.readAsDataURL(file);
-      } else {
+      } 
+      else {
         toast.error(`File ${file.name} is not an image`);
         setIsUploading(false);
       }
@@ -211,8 +216,10 @@ export default function ChatRoomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center p-4 sm:p-6">
-      <div className="w-full max-w-5xl">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center">
+      <AuthHeader />
+
+      <div className="w-full max-w-5xl mt-2">
         <div className="bg-white border border-gray-200 p-6 shadow-md mb-4">
           <div className="flex items-center justify-between">
             {isLoading ? (
@@ -271,8 +278,8 @@ export default function ChatRoomPage() {
                   key={msg.id || index} // Use msg.id for unique key if available
                   className={`relative p-3 rounded-xl max-w-[70%] sm:max-w-[60%] md:max-w-[50%] break-words ${
                     Number(msg.sender_id) === user?.id
-                      ? "bg-emerald-200 ml-auto rounded-br-none"
-                      : "bg-gray-100 mr-auto rounded-bl-none"
+                      ? "bg-emerald-200 ml-auto rounded-br-none text-end"
+                      : "bg-gray-100 mr-auto rounded-bl-none text-start"
                   }`}
                 >
                   {msg.content && <span>{msg.content}</span>}
