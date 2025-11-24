@@ -275,33 +275,42 @@ export default function ChatRoomPage() {
             ) : (
               messages.map((msg, index) => (
                 <div
-                  key={msg.id || index} // Use msg.id for unique key if available
-                  className={`relative p-3 rounded-xl max-w-[70%] sm:max-w-[60%] md:max-w-[50%] break-words ${
-                    Number(msg.sender_id) === user?.id
-                      ? "bg-emerald-200 ml-auto rounded-br-none text-end"
-                      : "bg-gray-100 mr-auto rounded-bl-none text-start"
-                  }`}
+                  key={msg.id || index}
+                  className={`flex ${msg.sender_id == user?.id ? "justify-end" : "justify-start"}`}
                 >
-                  {msg.content && <span>{msg.content}</span>}
-                  {msg.images?.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {msg.images.map((image: string, i: number) => (
-                        <Image
-                          key={i}
-                          src={`${PUBLIC_API}${image}`}
-                          alt={`Image ${i + 1}`}
-                          width={250}
-                          height={180}
-                          className="rounded-lg"
-                        />
-                      ))}
+                  <div
+                    className={`inline-block px-4 py-3 rounded-2xl max-w-prose break-words ${
+                      msg.sender_id == user?.id
+                        ? "bg-emerald-500 text-white rounded-br-none"
+                        : "bg-gray-200 text-gray-900 rounded-bl-none"
+                    }`}
+                  >
+                    {/* Message content */}
+                    {msg.content && <p className="whitespace-pre-wrap">{msg.content}</p>}
+
+                    {/* Images */}
+                    {msg.images?.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {msg.images.map((image: string, i: number) => (
+                          <Image
+                            key={i}
+                            src={`${PUBLIC_API}${image}`}
+                            alt={`Image ${i + 1}`}
+                            width={300}
+                            height={200}
+                            className="rounded-lg max-w-full h-auto"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Timestamp */}
+                    <div className={`flex text-xs mt-1.5 ${msg.sender_id == user?.id ? "justify-end text-emerald-100" : "justify-start text-gray-500"}`}>
+                      {new Date(msg.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date(msg.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
                   </div>
                 </div>
               ))

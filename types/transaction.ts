@@ -37,6 +37,7 @@ export interface Transaction {
   seller_id: string;
   amount: number;
   status: string;
+  payment_status: string;
   created_at: string;
 }
 

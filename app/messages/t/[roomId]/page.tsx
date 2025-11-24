@@ -19,6 +19,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Transaction, UserProfile } from "@/types/transaction";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { paymentMethods } from "@/lib/payment_method";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300";
 
@@ -29,7 +30,7 @@ export default function TransactionDetailsPage() {
   const [seller, setSeller] = useState<UserProfile | null>(null);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-  // const [unreadMessages, setUnreadMessages] = useState(3); // Mock unread message count
+  const [unreadMessages, setUnreadMessages] = useState(3); // Mock unread message count
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
@@ -37,7 +38,7 @@ export default function TransactionDetailsPage() {
 
   useEffect(() => {
     if (!user || !transactionUUID) return;
-
+    setUnreadMessages(3); // Mock fetching unread messages count remove later for build clean only
     const fetchTransactionDetails = async () => {
       try {
         const transactionRes = await axios.get(
@@ -131,13 +132,6 @@ export default function TransactionDetailsPage() {
     );
   }
 
-  const paymentMethods = [
-    { code: "qrph", name: "QR Code", icon: "/assets/icons/QRPh.png" },
-    { code: "card", name: "Debit/Credit Card", icon: "/assets/icons/debit_credit_card.jpg" },
-    { code: "gcash", name: "Gcash", icon: "/assets/icons/gcash.png" },
-    { code: "paymaya", name: "Paymaya", icon: "/assets/icons/paymaya.jpg" },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       <div className="w-full max-w-4xl space-y-6">
@@ -149,11 +143,13 @@ export default function TransactionDetailsPage() {
                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                   <User className="h-6 w-6 text-emerald-700" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
-                  {transaction.seller_name ?? "Loading..."}
-                </h2>
-                <p>@{transaction.seller_username}</p>
-                <p>{transaction.seller_email}</p>
+                <div className="flex flex-col">
+                  <h2 className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
+                    {transaction.seller_name ?? "Loading..."}
+                  </h2>
+                  <p>{transaction.seller_email}</p>
+                </div>
+                {/* <p>@{transaction.seller_username}</p> */}
               </Link>
             </HoverCardTrigger>
 
@@ -179,16 +175,16 @@ export default function TransactionDetailsPage() {
           </HoverCard>
           <Button
             variant="outline"
-            className="relative border-emerald-200 hover:bg-emerald-50"
+            className="relative bg-emerald-600 hover:bg-emerald-500"
             asChild
           >
             <Link href={`/messages/c/${transactionUUID}`}>
-              <MessageCircle className="h-5 w-5 text-emerald-600" />
-              {/* {unreadMessages > 0 && (
+              <MessageCircle className="h-5 w-5 text-white bold" />
+              {unreadMessages > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {unreadMessages}
                 </span>
-              )} */}
+              )}
             </Link>
           </Button>
         </div>
@@ -216,8 +212,8 @@ export default function TransactionDetailsPage() {
                 </p>
                 {transaction.post_image_url && (
                   <Image
-                    src={transaction.post_image_url}
-                    alt="Post image"
+                    src={`${PUBLIC_API}${transaction.post_image_url}`}
+                    alt={`${transaction.title} image`}
                     width={200}
                     height={150}
                     className="rounded-lg shadow-sm"
@@ -227,30 +223,25 @@ export default function TransactionDetailsPage() {
             </div>
           </div>
 
-          {/* Seller Details */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Seller Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <p className="text-sm text-gray-600">
-                <strong>Name:</strong>{" "}
-                {seller.username || transaction.seller_name || "N/A"}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Email:</strong> {seller.email || "N/A"}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Phone:</strong> {seller.mobile_number || "N/A"}
-              </p>
-            </div>
-          </div>
-
           {/* Transaction Details */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Transaction Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-4">
+            <div className="flex flex-col gap-2">
               <p className="text-sm text-gray-600">
-                <strong>Payment Status:</strong>  Pending
-                {/* {transaction.amount} */}
+                <strong>Payment Status:</strong>{" "}
+                <span
+                  className={`capitalize ${
+                    transaction.status === "pending"
+                      ? "text-yellow-600"
+                      : transaction.status === "completed"
+                      ? "text-green-600" 
+                      : transaction.status === "released" 
+                      ? "text-blue-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {transaction.payment_status}
+                </span>
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Amount:</strong> ₱{transaction.amount}
@@ -276,99 +267,99 @@ export default function TransactionDetailsPage() {
                 {new Date(transaction.created_at).toLocaleString()}
               </p>
             </div>
-          </div>
-
-          {/* Payment Method Selection Modal */}
-          <div className="flex justify-end gap-4">
-            <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
-                  disabled={isCanceling || isReleasing || transaction.status !== "pending"}
-                >
-                  {isCanceling ? (
-                    <div className="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full" />
-                  ) : (
-                    "Cancel Transaction"
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-semibold text-gray-900">
-                    Cancel Transaction
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                  <p className="text-sm text-gray-600">
-                    Are you sure you want to cancel this transaction? This action cannot be undone.
-                  </p>
-                </div>
-                <DialogFooter className="flex justify-end gap-2">
+            
+            {/* Payment Method Selection Modal */}
+            <div className="flex justify-end gap-4">
+              <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+                <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="border-gray-200 cursor-pointer"
-                    onClick={() => setIsCancelModalOpen(false)}
-                    disabled={isCanceling}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
-                    onClick={handleCancelTransaction}
-                    disabled={isCanceling}
+                    className="border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                    disabled={isCanceling || isReleasing || transaction.status !== "pending"}
                   >
                     {isCanceling ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                      <div className="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full" />
                     ) : (
-                      "Yes, cancel"
+                      "Cancel Transaction"
                     )}
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2 cursor-pointer"
-                  disabled={isReleasing || isCanceling || transaction.status !== "pending"}
-                >
-                  {isReleasing ? (
-                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                  ) : (
-                    "Release Payment"
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-semibold text-gray-900">
-                    Select Payment Method
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4 p-4">
-                  {paymentMethods.map((method) => (
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                      Cancel Transaction
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="text-sm text-gray-600">
+                      Are you sure you want to cancel this transaction? This action cannot be undone.
+                    </p>
+                  </div>
+                  <DialogFooter className="flex justify-end gap-2">
                     <Button
-                      key={method.name}
                       variant="outline"
-                      className="flex flex-col items-center justify-center h-24 border-gray-200 hover:bg-emerald-50 cursor-pointer"
-                      onClick={() => handleReleasePayment(method.code)}
-                      disabled={isReleasing || isCanceling}
+                      className="border-gray-200 cursor-pointer"
+                      onClick={() => setIsCancelModalOpen(false)}
+                      disabled={isCanceling}
                     >
-                      <Image
-                        src={method.icon}
-                        alt={`${method.name} icon`}
-                        width={40}
-                        height={40}
-                        className="mb-2 w-auto h-auto"
-                      />
-                      <span className="text-sm font-medium">{method.name}</span>
+                      Cancel
                     </Button>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
+                    <Button
+                      className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                      onClick={handleCancelTransaction}
+                      disabled={isCanceling}
+                    >
+                      {isCanceling ? (
+                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        "Yes, cancel"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2 cursor-pointer"
+                    disabled={isReleasing || isCanceling || transaction.status !== "pending"}
+                  >
+                    {isReleasing ? (
+                      <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      "Release Payment"
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                      Select Payment Method
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-4 p-4">
+                    {paymentMethods.map((method) => (
+                      <Button
+                        key={method.name}
+                        variant="outline"
+                        className="flex flex-col items-center justify-center h-24 border-gray-200 hover:bg-emerald-50 cursor-pointer"
+                        onClick={() => handleReleasePayment(method.code)}
+                        disabled={isReleasing || isCanceling}
+                      >
+                        <Image
+                          src={method.icon}
+                          alt={`${method.name} icon`}
+                          width={40}
+                          height={40}
+                          className="mb-2 w-auto h-auto"
+                        />
+                        <span className="text-sm font-medium">{method.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>  
           </div>
         </div>
       </div>
