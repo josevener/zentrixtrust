@@ -34,6 +34,7 @@ import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Post } from "@/types/marketplace";
+import { TransactionDisplay } from "@/types/transaction";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -69,6 +70,8 @@ export default function MarketplaceClient() {
   const [postToBuy, setPostToBuy] = useState<Post | null>(null);
   const [isBuying, setIsBuying] = useState(false);
   const router = useRouter();
+  const [transactions, setTransactions] = useState<TransactionDisplay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
     "all",
@@ -101,6 +104,50 @@ export default function MarketplaceClient() {
     fetchPosts();
   }, [user]);
 
+  useEffect(() => {
+    if (!user?.id) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchTransactions = async () => {
+      try {
+        setIsLoading(true);
+
+        const res = await fetch(`${PUBLIC_API}/api/transactions/get_all/${user.id}`, {
+          credentials: "include", // include cookies for authentication
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch transactions");
+        }
+
+        const data: TransactionDisplay[] = await res.json();
+
+        // Optional: sort by newest first
+        const sorted = data.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        setTransactions(sorted);
+      } 
+      catch (err: unknown) {
+        console.error("Error fetching transactions:", err);
+
+        const errorMessage = err instanceof Error ? err.message : "Failed to load transactions";
+
+        toast.error(errorMessage);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [user?.id]);
+
+  console.log("Transactions:", JSON.stringify(transactions, null, 2));
+  
   useEffect(() => {
     const filtered = posts.filter(
       (post) =>
@@ -1118,14 +1165,26 @@ export default function MarketplaceClient() {
           <h2 className="text-lg font-semibold mb-4 text-gray-800">
             Recent Transactions
           </h2>
-          {loading ? (
+          {isLoading ? (
             <div className="space-y-4">
               <Skeleton className="h-8 w-full bg-gray-300 rounded-lg" />
               <Skeleton className="h-8 w-full bg-gray-300 rounded-lg" />
               <Skeleton className="h-8 w-full bg-gray-300 rounded-lg" />
             </div>
           ) : (
-            <p className="text-gray-500 italic">No recent transactions</p>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+              {transactions.slice(0, 5).map((tx, index) => (
+                <div key={++index} className="p-3 bg-white border rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">{tx.buyer_name}</span> bought{" "}
+                    <span className="font-medium">{tx.item_name}</span>
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {tx.created_at}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

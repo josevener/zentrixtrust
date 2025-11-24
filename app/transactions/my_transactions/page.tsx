@@ -21,32 +21,21 @@ import {
   Search,
   Blocks,
   PackageSearch,
+  TextSelect,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import AuthHeader from "@/components/AuthHeader";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-
-interface Transaction {
-  transaction_uuid: string;
-  buyer_id: number;
-  seller_id: number;
-  buyer_name: string;
-  seller_name: string;
-  status: "pending" | "released" | "disputed" | "cancelled";
-  created_at: string;
-  item_name: string;
-  description: string;
-  amount: string;
-}
+import { TransactionDisplay } from "@/types/transaction";
 
 const PUBLIC_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3300";
 
 export default function MyTransactionsPage() {
   const { user } = useUser();
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<TransactionDisplay[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<TransactionDisplay[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +60,7 @@ export default function MyTransactionsPage() {
           throw new Error("Failed to fetch transactions");
         }
 
-        const data: Transaction[] = await res.json();
+        const data: TransactionDisplay[] = await res.json();
 
         // Optional: sort by newest first
         const sorted = data.sort((a, b) => 
@@ -229,10 +218,13 @@ export default function MyTransactionsPage() {
                           : `Buyer: ${transaction.buyer_name}`}
                       </p>
                     </div>
-
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {transaction.description}
-                    </p>
+                    
+                    <div className="flex items-center gap-2">
+                      <TextSelect className="h-5 w-5 text-gray-500"/> 
+                      <p className="text-sm text-gray-700 line-clamp-2">
+                        {transaction.description}
+                      </p>
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-5 w-5 text-gray-500" />
@@ -246,7 +238,7 @@ export default function MyTransactionsPage() {
                       <p className="text-sm text-gray-700">
                         {new Date(transaction.created_at).toLocaleDateString("en-US", {
                           year: "numeric",
-                          month: "short",
+                          month: "long",
                           day: "numeric",
                         })}
                       </p>

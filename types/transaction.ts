@@ -41,6 +41,19 @@ export interface Transaction {
   created_at: string;
 }
 
+export interface TransactionDisplay {
+  transaction_uuid: string;
+  buyer_id: number;
+  seller_id: number;
+  buyer_name: string;
+  seller_name: string;
+  status: "pending" | "released" | "disputed" | "cancelled";
+  created_at: string;
+  item_name: string;
+  description: string;
+  amount: string;
+}
+
 export interface AccountInfo {
   bank_name?: string;
   account_number?: string;

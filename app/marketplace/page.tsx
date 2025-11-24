@@ -3,8 +3,7 @@ import MarketplaceClient from "./MarketplaceClient";
 
 export const metadata: Metadata = {
   title: "Zentrix Marketplace | Buy & Sell Safely",
-  description:
-    "Discover a secure and trusted marketplace by Zentrix. Buy and sell products directly with verified users — with protected transactions and chat features.",
+  description: "Discover a secure and trusted marketplace by Zentrix. Buy and sell products directly with verified users — with protected transactions and chat features.",
   keywords: [
     "Zentrix",
     "marketplace",
@@ -16,8 +15,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zentrix Marketplace | Safe & Trusted Deals",
-    description:
-      "Join the Zentrix Marketplace — connect with buyers and sellers directly, negotiate securely, and enjoy peace of mind with protected payments.",
+    description: "Join the Zentrix Marketplace — connect with buyers and sellers directly, negotiate securely, and enjoy peace of mind with protected payments.",
     url: "https://zentrixtrust.com/marketplace",
     siteName: "Zentrix Marketplace",
     images: [
