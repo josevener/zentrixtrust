@@ -691,7 +691,7 @@ export default function WalletPage() {
                     <div className="space-y-8">
                       {filteredTransactions.map((tx, idx) => (
                         <div
-                          key={tx.transaction_uuid}
+                          key={idx}
                           className="relative flex items-start gap-4 md:ml-16 cursor-pointer group"
                           onClick={() => openDetail(tx)}
                         >
